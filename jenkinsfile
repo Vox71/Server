@@ -1,5 +1,6 @@
 pipeline {
-       agent none
+       agent {
+       }
        environment {
            DEPLOY_USER = 'jbuk' // имя пользователя на виртуальной машине
            DEPLOY_HOST = '192.168.3.68' // IP-адрес виртуальной машины
