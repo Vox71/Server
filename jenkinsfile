@@ -1,0 +1,55 @@
+pipeline {
+       agent {
+           docker {
+               image 'docker/compose:latest'
+           }
+       }
+       environment {
+           DEPLOY_USER = 'jbuk' // имя пользователя на виртуальной машине
+           DEPLOY_HOST = '192.168.3.68' // IP-адрес виртуальной машины
+           DOCKER_COMPOSE_FILE = 'docker-compose.yml'
+           DOCKER_FILE = 'Dockerfile'
+           REMOTE_DIRECTORY = '/home/jbuk' // путь на виртуальной машине для деплоя
+       }
+       stages {
+           stage('Build') {
+               steps {
+                   script {
+                       // Сборка образа Docker
+                       sh "docker-compose -f ${DOCKER_COMPOSE_FILE} build"
+                   }
+               }
+           }
+           stage('Push') {
+               steps {
+                   script {
+                       // Локальная команда для запуска контейнеров
+                       sh "docker-compose -f ${DOCKER_COMPOSE_FILE} push"
+                   }
+               }
+           }
+           stage('Deploy') {
+               steps {
+                   script {
+                       // Копирование файлов на виртуальную машину
+                       sh "ssh ${DEPLOY_USER}@${DEPLOY_HOST} 'mkdir -p ${REMOTE_DIRECTORY}'"
+                       sh "scp ${DOCKER_COMPOSE_FILE} ${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIRECTORY}/"
+                       sh "scp Dockerfile ${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIRECTORY}/"
+                       // Вход в виртуальную машину и запуск docker-compose
+                       sh """
+                       ssh ${DEPLOY_USER}@${DEPLOY_HOST} << EOF
+                       cd ${REMOTE_DIRECTORY}
+                       docker-compose down
+                       docker-compose up -d
+                       EOF
+                       """
+                   }
+               }
+           }
+       }
+       post {
+           always {
+               cleanWs() // Очистка рабочего пространства
+           }
+       }
+   }

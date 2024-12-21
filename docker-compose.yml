@@ -1,11 +1,97 @@
-version: '3.8'
+version: '3.7'
 
 services:
-  flask_app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "5000:5000"
+  pg-0:
+    image: bitnami/postgresql-repmgr:latest
+    container_name: pg-0
+    networks:
+      - pg_network
     environment:
-      - FLASK_ENV=development  # или "production"
+      REPMGR_PARTNER_NODES: pg-0,pg-1,pg-2
+      REPMGR_NODE_NAME: pg-0
+      REPMGR_NODE_NETWORK_NAME: pg-0
+      REPMGR_PRIMARY_HOST: pg-0
+      REPMGR_PASSWORD: password
+      POSTGRESQL_POSTGRES_PASSWORD: password
+      POSTGRESQL_USERNAME: postgres
+      POSTGRESQL_PASSWORD: password
+      POSTGRESQL_DATABASE: online_store
+    volumes:
+      - ./export.sql:/docker-entrypoint-initdb.d/export.sql
+
+  pg-1:
+    image: bitnami/postgresql-repmgr:latest
+    container_name: pg-1
+    networks:
+      - pg_network
+    environment:
+      REPMGR_PARTNER_NODES: pg-0,pg-1,pg-2
+      REPMGR_NODE_NAME: pg-1
+      REPMGR_NODE_NETWORK_NAME: pg-1
+      REPMGR_PRIMARY_HOST: pg-0
+      REPMGR_PASSWORD: password
+      POSTGRESQL_POSTGRES_PASSWORD: password
+      POSTGRESQL_USERNAME: postgres
+      POSTGRESQL_PASSWORD: password
+      POSTGRESQL_DATABASE: online_store
+    volumes:
+      - ./export.sql:/docker-entrypoint-initdb.d/export.sql
+
+  pg-2:
+    image: bitnami/postgresql-repmgr:latest
+    container_name: pg-2
+    networks:
+      - pg_network
+    environment:
+      REPMGR_PARTNER_NODES: pg-0,pg-1,pg-2
+      REPMGR_NODE_NAME: pg-2
+      REPMGR_NODE_NETWORK_NAME: pg-2
+      REPMGR_PRIMARY_HOST: pg-0
+      REPMGR_PASSWORD: password
+      POSTGRESQL_POSTGRES_PASSWORD: password
+      POSTGRESQL_USERNAME: postgres
+      POSTGRESQL_PASSWORD: password
+      POSTGRESQL_DATABASE: online_store
+    volumes:
+      - ./export.sql:/docker-entrypoint-initdb.d/export.sql
+
+  pgpool:
+    image: bitnami/pgpool:latest
+    container_name: pgpool
+    networks:
+      - pg_network
+    environment:
+      PGPOOL_BACKEND_NODES: 0:pg-0:5432,1:pg-1:5432,2:pg-2:5432
+      PGPOOL_SR_CHECK_USER: postgres
+      PGPOOL_SR_CHECK_PASSWORD: password
+      PGPOOL_POSTGRES_USERNAME: postgres
+      PGPOOL_POSTGRES_PASSWORD: password
+      PGPOOL_ADMIN_USERNAME: postgres
+      PGPOOL_ADMIN_PASSWORD: password
+    depends_on:
+      - pg-0
+      - pg-1
+      - pg-2
+
+  pgpool2:
+    image: bitnami/pgpool:latest
+    container_name: pgpool2
+    networks:
+      - pg_network
+    environment:
+      PGPOOL_BACKEND_NODES: 0:pg-0:5432,1:pg-1:5432,2:pg-2:5432
+      PGPOOL_SR_CHECK_USER: postgres
+      PGPOOL_SR_CHECK_PASSWORD: password
+      PGPOOL_POSTGRES_USERNAME: postgres
+      PGPOOL_POSTGRES_PASSWORD: password
+      PGPOOL_ADMIN_USERNAME: postgres
+      PGPOOL_ADMIN_PASSWORD: password
+    depends_on:
+      - pg-0
+      - pg-1
+      - pg-2
+
+networks:
+  pg_network:
+    external:
+      name: pg_network
