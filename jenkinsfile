@@ -11,22 +11,22 @@ pipeline {
            REMOTE_DIRECTORY = '/home/jbuk' // путь на виртуальной машине для деплоя
        }
        stages {
-           stage('Build') {
-               steps {
-                   script {
-                       // Сборка образа Docker
-                       sh "docker-compose -f ${DOCKER_COMPOSE_FILE} build"
-                   }
-               }
-           }
-           stage('Push') {
-               steps {
-                   script {
-                       // Локальная команда для запуска контейнеров
-                       sh "docker-compose -f ${DOCKER_COMPOSE_FILE} push"
-                   }
-               }
-           }
+        //    stage('Build') {
+        //        steps {
+        //            script {
+        //                // Сборка образа Docker
+        //                sh "docker-compose -f ${DOCKER_COMPOSE_FILE} build"
+        //            }
+        //        }
+        //    }
+        //    stage('Push') {
+        //        steps {
+        //            script {
+        //                // Локальная команда для запуска контейнеров
+        //                sh "docker-compose -f ${DOCKER_COMPOSE_FILE} push"
+        //            }
+        //        }
+        //    }
            stage('Deploy') {
                steps {
                    script {
