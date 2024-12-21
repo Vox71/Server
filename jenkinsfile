@@ -31,6 +31,8 @@ pipeline {
                steps {
                    script {
                        // Копирование файлов на виртуальную машину
+                       sh 'which ssh'
+                       sh 'ssh -V'
                        sh "ssh ${DEPLOY_USER}@${DEPLOY_HOST} 'mkdir -p ${REMOTE_DIRECTORY}'"
                        sh "scp ${DOCKER_COMPOSE_FILE} ${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIRECTORY}/"
                        sh "scp Dockerfile ${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIRECTORY}/"
