@@ -10,6 +10,7 @@ from psycopg2 import OperationalError, sql
 # from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from prometheus_flask_exporter import PrometheusMetrics
 app = Flask(__name__)
+app.config['DEBUG'] = False
 
 # REQUEST_COUNT = Counter('request_count', 'Total number of requests')
 
