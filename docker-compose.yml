@@ -93,5 +93,4 @@ services:
 
 networks:
   pg_network:
-    external:
-      name: pg_network
+    name: pg_network
