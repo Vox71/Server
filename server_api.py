@@ -8,26 +8,24 @@ from psycopg2 import OperationalError, sql
 from prometheus_client import Counter, generate_latest, CollectorRegistry
 from prometheus_client import make_wsgi_app
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
-# from prometheus_flask_exporter import PrometheusMetrics
+from prometheus_flask_exporter import PrometheusMetrics
 
 app = Flask(__name__)
 
-REQUEST_COUNT = Counter('request_count', 'Total number of requests')
+# REQUEST_COUNT = Counter('request_count', 'Total number of requests')
 
-# metrics = PrometheusMetrics(app)
+metrics = PrometheusMetrics(app)
 # Конфигурация базы данных
-logging.basicConfig(filename='request_times.log', level=logging.INFO,
-                    format='%(message)s')
 
-def time_request(func):
-    @functools.wraps(func)  # Сохраняем метаданные оригинальной функции
-    def wrapper(*args, **kwargs):
-        start_time = time.time()  # Запоминаем время начала
-        response = func(*args, **kwargs)  # Выполняем основной обработчик
-        duration = time.time() - start_time  # Вычисляем длительность
-        logging.info(f"{duration:.4f}")  # Логируем только длительность в секундах
-        return response
-    return wrapper
+# def time_request(func):
+#     @functools.wraps(func)  # Сохраняем метаданные оригинальной функции
+#     def wrapper(*args, **kwargs):
+#         start_time = time.time()  # Запоминаем время начала
+#         response = func(*args, **kwargs)  # Выполняем основной обработчик
+#         duration = time.time() - start_time  # Вычисляем длительность
+#         logging.info(f"{duration:.4f}")  # Логируем только длительность в секундах
+#         return response
+#     return wrapper
 
 # pgpool_addresses = [('172.23.0.5', 5432), ('172.23.0.6', 5432)]
 # lever = 'left'
@@ -43,7 +41,7 @@ def get_db_connection():
 
 @app.route('/products', methods=['GET'])
 def get_products():
-    REQUEST_COUNT.inc()
+    # REQUEST_COUNT.inc()
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM Products;')
@@ -78,7 +76,7 @@ def get_products():
 #     return jsonify({'message': 'Purchase successful', 'order_id': order_id})
 
 @app.route('/cart/add', methods=['POST'])
-@time_request
+# @time_request
 def add_to_cart():
     data = request.json
     cart_id = data['cart_id']
@@ -98,7 +96,7 @@ def add_to_cart():
     return jsonify({'message': 'Product added to cart'})
 
 @app.route('/cart/update', methods=['POST'])
-@time_request
+# @time_request
 def update_cart_item():
     data = request.json
     cart_id = data['cart_id']
@@ -126,7 +124,7 @@ def update_cart_item():
 
 
 @app.route('/cart/remove', methods=['DELETE'])
-@time_request
+# @time_request
 def remove_from_cart():
     data = request.json
     cart_id = data['cart_id']
@@ -145,7 +143,7 @@ def remove_from_cart():
     return jsonify({'message': 'Product removed from cart'})
 
 @app.route('/checkout', methods=['POST'])
-@time_request
+# @time_request
 def checkout():
     data = request.json # Получаем данные из JSON
     cart_id = data['cart_id']
@@ -188,7 +186,7 @@ def checkout():
         conn.close()
 
 @app.route('/user/add', methods=['POST'])
-@time_request
+# @time_request
 def create_user():
     data = request.json # Получаем данные из JSON
     i = data['user_id']
