@@ -97,6 +97,8 @@ services:
       replicas: 1
     networks:
       - pg_network
+    ports:
+      - 5000:5000
     depends_on:
       - pg-0
       - pg-1
@@ -107,27 +109,22 @@ services:
       - FLASK_DEBUG=0
       - FLASK_APP=server_api.py
       - FLASK_ENV=production
-    command: flask run --host 0.0.0.0
+    # command: flask run
 
-  # nginx:
-  #   image: nginx:latest
-  #   ports:
-  #     - "80:80"
-  #   volumes:
-  #     - ./nginx.conf:/etc/nginx/conf.d/default.conf
-  #   networks:
-  #     - pg_network
-  #   depends_on:
-  #     - pg-0
-  #     - pg-1
-  #     - pg-2
-  #     - pgpool
-  #     - pgpool2
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - pg_network
+    depends_on:
+      - pg-0
+      - pg-1
+      - pg-2
+      - pgpool
+      - pgpool2
 
 networks:
   pg_network:
-      # name: pg_network
-    ipam:
-     config:
-       - subnet: 172.23.0.0/16
-         gateway: 172.23.0.1

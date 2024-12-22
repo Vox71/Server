@@ -9,12 +9,7 @@ from psycopg2 import OperationalError, sql
 # from prometheus_client import make_wsgi_app
 # from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from prometheus_flask_exporter import PrometheusMetrics
-log = logging.getLogger('werkzeug')
-log.disabled = True
-log.setLevel(logging.ERROR)
 app = Flask(__name__)
-app.config['DEBUG'] = False
-app.logger.disabled = True
 # app.config['DEBUG'] = False
 app.debug = False
 # REQUEST_COUNT = Counter('request_count', 'Total number of requests')
