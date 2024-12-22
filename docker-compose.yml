@@ -121,5 +121,4 @@ services:
 
 networks:
   pg_network:
-    external: 
-      name: jbuk_pg_network
+      
