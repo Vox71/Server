@@ -109,7 +109,6 @@ services:
       - FLASK_DEBUG=0
       - FLASK_APP=server_api.py
       - FLASK_ENV=production
-    # command: flask run
 
   nginx:
     image: nginx:latest
@@ -125,6 +124,31 @@ services:
       - pg-2
       - pgpool
       - pgpool2
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - web-server_pg_network
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - web-server_pg_network
+
 
 networks:
   pg_network:

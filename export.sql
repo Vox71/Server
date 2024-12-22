@@ -41,7 +41,6 @@ CREATE TABLE Cart_Items (
 );
 
 
--- Функция на удаление из корзины
 CREATE OR REPLACE FUNCTION cancel_cart(cart_id INTEGER)
 RETURNS VOID AS $$
 BEGIN
@@ -49,19 +48,7 @@ BEGIN
     WHERE cart_id = cart_id;
 END;
 $$ LANGUAGE plpgsql;
--- SELECT cancel_cart(1); -- где 1 - id корзины
 
--- Получить свою корзину
--- CREATE FUNCTION get_user_cart(user_id INTEGER) RETURNS TABLE(cart_id INTEGER, product_id INTEGER, quantity INTEGER) AS $$
--- BEGIN
---     RETURN QUERY SELECT ci.cart_id, ci.product_id, ci.quantity
---     FROM Cart_Items ci
---     JOIN Carts c ON ci.cart_id = c.id
---     WHERE c.user_id = user_id;
--- END;
--- $$ LANGUAGE plpgsql;
-
-----------------------------------------
 CREATE ROLE customer WITH LOGIN PASSWORD 'customer_password';
 
 GRANT EXECUTE ON FUNCTION cancel_cart(INTEGER) TO customer;
@@ -74,7 +61,7 @@ REVOKE ALL ON Order_Items FROM customer;
 
 ALTER TABLE Carts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY user_cart_policy ON Carts
-FOR SELECT USING (user_id = current_user_id()); -- user_id - это идентификатор, связанный с текущим пользователем
+FOR SELECT USING (user_id = current_user_id());
 
 ALTER TABLE Cart_Items ENABLE ROW LEVEL SECURITY;
 

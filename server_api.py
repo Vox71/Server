@@ -1,23 +1,10 @@
-import functools
 import random
-import time
 from flask import Flask, request, jsonify
-import logging
 import psycopg2
-from psycopg2 import OperationalError, sql
-# from prometheus_client import Counter, generate_latest, CollectorRegistry
-# from prometheus_client import make_wsgi_app
-# from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from prometheus_flask_exporter import PrometheusMetrics
 app = Flask(__name__)
-# app.config['DEBUG'] = False
 app.debug = False
-# REQUEST_COUNT = Counter('request_count', 'Total number of requests')
-
 metrics = PrometheusMetrics(app)
-metrics.info('app_info', 'Application info', version='1.0.3')
-# Конфигурация базы данных
-
 # def time_request(func):
 #     @functools.wraps(func)  # Сохраняем метаданные оригинальной функции
 #     def wrapper(*args, **kwargs):
@@ -79,24 +66,18 @@ def update_cart_item():
     cart_id = data['cart_id']
     product_id = data['product_id']
     quantity = data['quantity']
-
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    # Обновляем количество товара в корзине
     cursor.execute(
         'UPDATE Cart_Items SET quantity = %s WHERE cart_id = %s AND product_id = %s',
         (quantity, cart_id, product_id)
     )
-    
-    # Проверяем, было ли обновлено хотя бы одно значение
     if cursor.rowcount == 0:
         return jsonify({'message': 'Item not found in cart'}), 404
 
     conn.commit()
     cursor.close()
     conn.close()
-
     return jsonify({'message': 'Cart item updated successfully'})
 
 
@@ -106,7 +87,6 @@ def remove_from_cart():
     data = request.json
     cart_id = data['cart_id']
     product_id = data['product_id']
-
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
@@ -122,37 +102,26 @@ def remove_from_cart():
 @app.route('/checkout', methods=['POST'])
 # @time_request
 def checkout():
-    data = request.json # Получаем данные из JSON
+    data = request.json
     cart_id = data['cart_id']
-
     conn = get_db_connection()
     cursor = conn.cursor()
-
     try:
-        # Получаем корзину
         cursor.execute('SELECT user_id FROM cart WHERE id = %s;', (cart_id,))
         cart = cursor.fetchone()
         if not cart:
             return jsonify({'error': 'Cart not found'}), 404
 
-        # Получаем элементы корзины
         cursor.execute('SELECT product_id, quantity FROM cart_items WHERE cart_id = %s;', (cart_id,))
         cart_items = cursor.fetchall()
         if not cart_items:
             return jsonify({'error': 'Cart is empty'}), 400
 
-        # Создаем новый заказ
         cursor.execute('INSERT INTO orders (user_id) VALUES (%s) RETURNING id;', (cart[0],))
         order_id = cursor.fetchone()[0]
-
-        # Создаем элементы заказа на основе элементов корзины
         for item in cart_items:
             cursor.execute('INSERT INTO order_items (order_id, product_id, quantity) VALUES (%s, %s, %s);', (order_id, item[0], item[1]))
-
-        # Удаляем элементы из корзины
         cursor.execute('DELETE FROM cart_items WHERE cart_id = %s;', (cart_id,))
-
-        # Сохраняем изменения в БД
         conn.commit()
         return jsonify({'message': 'Order created successfully', 'order_id': order_id}), 201
     except Exception as e:
@@ -165,7 +134,7 @@ def checkout():
 @app.route('/user/add', methods=['POST'])
 # @time_request
 def create_user():
-    data = request.json # Получаем данные из JSON
+    data = request.json
     i = data['user_id']
     conn = get_db_connection()
     cursor = conn.cursor()
