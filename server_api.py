@@ -5,13 +5,14 @@ from flask import Flask, request, jsonify
 import logging
 import psycopg2
 from psycopg2 import OperationalError, sql
-from prometheus_client import Counter, generate_latest, CollectorRegistry
+from prometheus_client import PrometheusMetrics, generate_latest, CollectorRegistry
 from prometheus_client import make_wsgi_app
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
+from prometheus_flask_exporter import PrometheusMetrics
 
 app = Flask(__name__)
-REQUEST_COUNT = Counter('request_count', 'Total number of requests')
 
+metrics = PrometheusMetrics(app)
 # Конфигурация базы данных
 logging.basicConfig(filename='request_times.log', level=logging.INFO,
                     format='%(message)s')
@@ -40,7 +41,6 @@ def get_db_connection():
 
 @app.route('/products', methods=['GET'])
 def get_products():
-    REQUEST_COUNT.inc() 
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM Products;')
@@ -77,7 +77,6 @@ def get_products():
 @app.route('/cart/add', methods=['POST'])
 @time_request
 def add_to_cart():
-    REQUEST_COUNT.inc() 
     data = request.json
     cart_id = data['cart_id']
     product_id = data['product_id']
@@ -98,7 +97,6 @@ def add_to_cart():
 @app.route('/cart/update', methods=['POST'])
 @time_request
 def update_cart_item():
-    REQUEST_COUNT.inc() 
     data = request.json
     cart_id = data['cart_id']
     product_id = data['product_id']
@@ -127,7 +125,6 @@ def update_cart_item():
 @app.route('/cart/remove', methods=['DELETE'])
 @time_request
 def remove_from_cart():
-    REQUEST_COUNT.inc() 
     data = request.json
     cart_id = data['cart_id']
     product_id = data['product_id']
@@ -147,7 +144,6 @@ def remove_from_cart():
 @app.route('/checkout', methods=['POST'])
 @time_request
 def checkout():
-    REQUEST_COUNT.inc() 
     data = request.json # Получаем данные из JSON
     cart_id = data['cart_id']
 
@@ -191,7 +187,6 @@ def checkout():
 @app.route('/user/add', methods=['POST'])
 @time_request
 def create_user():
-    REQUEST_COUNT.inc() 
     data = request.json # Получаем данные из JSON
     i = data['user_id']
     conn = get_db_connection()
@@ -205,9 +200,6 @@ def create_user():
     conn.close()
     return jsonify({'message': 'user created'})
 
-@app.route('/metrics')
-def metrics():
-    return generate_latest(), 200, {'Content-Type': 'text/plain; version=0.0.4; charset=utf-8'}
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug='true')
