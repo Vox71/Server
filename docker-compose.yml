@@ -134,7 +134,7 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     networks:
-      - web-server_pg_network
+      - pg_network
 
   grafana:
     image: grafana/grafana
@@ -147,7 +147,7 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     networks:
-      - web-server_pg_network
+      - pg_network
 
 
 networks:
