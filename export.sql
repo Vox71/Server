@@ -40,19 +40,6 @@ CREATE TABLE Cart_Items (
     quantity INTEGER NOT NULL CHECK (quantity > 0)
 );
 
-CREATE OR REPLACE FUNCTION clear_cart_after_order()
-RETURNS TRIGGER AS $$
-BEGIN
-    DELETE FROM Cart_Items
-    WHERE cart_id = (SELECT id FROM Cart WHERE user_id = NEW.user_id);
-    RETURN NULL; -- ничего не возвращаем, так как чистим корзину
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER after_order_insert
-AFTER INSERT ON Orders
-FOR EACH ROW
-EXECUTE FUNCTION clear_cart_after_order();
 
 -- Функция на удаление из корзины
 CREATE OR REPLACE FUNCTION cancel_cart(cart_id INTEGER)
