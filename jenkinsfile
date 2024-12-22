@@ -3,7 +3,7 @@ pipeline {
 
     stages {
         stage('Build') {
-            agent { label 'debdeb_agent' } // Сборка на агенте master
+            agent { label 'local' } // Сборка на агенте master
             steps {
                 script {
                     // Выполнение команды для сборки проекта
@@ -13,7 +13,7 @@ pipeline {
         }
 
         stage('Deploy') {
-            agent { label 'local' } // Деплой на агенте debdeb_agent
+            agent { label 'debdeb_agent' } // Деплой на агенте debdeb_agent
             steps {
                 script {
                     // Выполнение команды для деплоя проекта
