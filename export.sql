@@ -18,24 +18,19 @@ CREATE TABLE Products (
 
 CREATE TABLE Orders (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL,
-    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(50) NOT NULL,
-    total DECIMAL(10, 2) NOT NULL
+    user_id INTEGER NOT NULL
 );
 
 CREATE TABLE Order_Items (
     id SERIAL PRIMARY KEY,
     order_id INTEGER REFERENCES Orders(id),
     product_id INTEGER REFERENCES Products(id),
-    quantity INTEGER NOT NULL CHECK (quantity > 0),
-    unit_price DECIMAL(10, 2) NOT NULL
+    quantity INTEGER NOT NULL CHECK (quantity > 0)
 );
 
 CREATE TABLE Cart (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    user_id INTEGER NOT NULL
 );
 
 CREATE TABLE Cart_Items (
