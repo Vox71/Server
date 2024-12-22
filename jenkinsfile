@@ -23,8 +23,8 @@ pipeline {
         }
     }
      post {
-        agent { label 'debdeb_agent' }
-           always {
+        always {
+            agent { label 'debdeb_agent' }
                cleanWs() // Очистка рабочего пространства
            }
        }
