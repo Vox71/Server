@@ -22,10 +22,5 @@ pipeline {
             }
         }
     }
-     post {
-        always {
-            agent { label 'debdeb_agent' }
-               cleanWs() // Очистка рабочего пространства
-           }
-       }
+     
 }
