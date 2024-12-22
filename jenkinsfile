@@ -1,46 +1,25 @@
 pipeline {
-    agent any
-
-    environment {
-        DOCKER_COMPOSE_FILE = 'docker-compose.yml'
-        SQL_EXPORT = 'export.sql'
-        DOCKERFILE = 'Dockerfile'
-        NGINX_CONF = 'nginx.conf'
-        REQ_FILE = 'requirements.txt'
-        DEPLOY_HOST = 'jbuk@192.168.3.68' // Замените на ваш удаленный хост
-        DEPLOY_PATH = '/home/jbuk' // Замените на путь, куда вы хотите развернуть
-    }
+    agent none // Указываем, что не используем общий агент для всех этапов
 
     stages {
         stage('Build') {
+            agent { label 'master' } // Сборка на агенте master
             steps {
                 script {
-                    // Сборка проекта локально
-                    sh "docker-compose -f ${DOCKER_COMPOSE_FILE} build"
+                    // Выполнение команды для сборки проекта
+                    sh 'docker-compose build'
                 }
             }
         }
 
         stage('Deploy') {
+            agent { label 'debdeb_agent' } // Деплой на агенте debdeb_agent
             steps {
                 script {
-                    // Копирование docker-compose.yml на удаленный хост
-                    sh "scp ${DOCKER_COMPOSE_FILE} ${DEPLOY_HOST}:${DEPLOY_PATH}"
-                    sh "scp ${SQL_EXPORT} ${DEPLOY_HOST}:${DEPLOY_PATH}"
-                    sh "scp ${DOCKERFILE} ${DEPLOY_HOST}:${DEPLOY_PATH}"
-                    // Выполнение docker-compose на удаленном хосте
-                    sh "ssh ${DEPLOY_HOST} 'cd ${DEPLOY_PATH} && docker-compose -f ${DOCKER_COMPOSE_FILE} up -d'"
+                    // Выполнение команды для деплоя проекта
+                    sh 'docker-compose up -d'
                 }
             }
-        }
-    }
-
-    post {
-        success {
-            echo 'Deployment completed successfully!'
-        }
-        failure {
-            echo 'Deployment failed.'
         }
     }
 }
