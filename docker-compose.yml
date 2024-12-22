@@ -137,6 +137,9 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
     networks:
       - pg_network
+      - pgpool
+      - pgpool2
+      - nginx
 
   grafana:
     image: grafana/grafana
@@ -150,6 +153,9 @@ services:
       - pg_network
     depends_on:
       - prometheus
+      - pgpool
+      - pgpool2
+      - nginx
 
 
 networks:
