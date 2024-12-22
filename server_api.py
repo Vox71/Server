@@ -5,16 +5,16 @@ from flask import Flask, request, jsonify
 import logging
 import psycopg2
 from psycopg2 import OperationalError, sql
-from prometheus_client import Counter, generate_latest, CollectorRegistry
-from prometheus_client import make_wsgi_app
-from werkzeug.middleware.dispatcher import DispatcherMiddleware
+# from prometheus_client import Counter, generate_latest, CollectorRegistry
+# from prometheus_client import make_wsgi_app
+# from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from prometheus_flask_exporter import PrometheusMetrics
-
 app = Flask(__name__)
 
 # REQUEST_COUNT = Counter('request_count', 'Total number of requests')
 
 metrics = PrometheusMetrics(app)
+metrics.info('app_info', 'Application info', version='1.0.3')
 # Конфигурация базы данных
 
 # def time_request(func):
@@ -27,9 +27,6 @@ metrics = PrometheusMetrics(app)
 #         return response
 #     return wrapper
 
-# pgpool_addresses = [('172.23.0.5', 5432), ('172.23.0.6', 5432)]
-# lever = 'left'
-
 def get_db_connection():
     lever = random.choice([1, 2])
     if lever == 1:
@@ -39,9 +36,12 @@ def get_db_connection():
         conn = psycopg2.connect(database='online_store', user='postgres', password='password', host='172.23.0.6', port=5432)
         return conn
 
+@app.route('/')
+def main():
+    pass 
+
 @app.route('/products', methods=['GET'])
 def get_products():
-    # REQUEST_COUNT.inc()
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM Products;')
@@ -50,30 +50,6 @@ def get_products():
     conn.close()
 
     return jsonify(products)
-
-# @app.route('/test', methods=['GET'])
-# def get_somtihs():
-
-#     products = 'sometext'
-
-
-#     return jsonify(products)
-
-# @app.route('/cart/purchase', methods=['POST'])
-# @time_request
-# def purchase_cart():
-#     data = request.json
-#     cart_id = data['cart_id']
-#     user_id = data['user_id']
-#     conn = get_db_connection()
-#     cursor = conn.cursor()
-#     cursor.callproc('purchase_cart', [cart_id, user_id])
-#     order_id = cursor.fetchone()[0]  # Получаем ID нового заказа
-#     conn.commit()
-#     cursor.close()
-#     conn.close()
-
-#     return jsonify({'message': 'Purchase successful', 'order_id': order_id})
 
 @app.route('/cart/add', methods=['POST'])
 # @time_request
@@ -200,10 +176,6 @@ def create_user():
     cursor.close()
     conn.close()
     return jsonify({'message': 'user created'})
-
-# @app.route('/metrics')
-# def metrics():
-#     return generate_latest(), 200, {'Content-Type': 'text/plain; version=0.0.4; charset=utf-8'}
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug='False')
