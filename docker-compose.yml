@@ -16,8 +16,8 @@ services:
       POSTGRESQL_USERNAME: postgres
       POSTGRESQL_PASSWORD: password
       POSTGRESQL_DATABASE: online_store
-    # volumes:
-    #   - ./export.sql:/docker-entrypoint-initdb.d/export.sql
+    volumes:
+      - ./export.sql:/docker-entrypoint-initdb.d/export.sql
 
   pg-1:
     image: bitnami/postgresql-repmgr:latest
@@ -34,8 +34,8 @@ services:
       POSTGRESQL_USERNAME: postgres
       POSTGRESQL_PASSWORD: password
       POSTGRESQL_DATABASE: online_store
-    # volumes:
-    #   - ./export.sql:/docker-entrypoint-initdb.d/export.sql
+    volumes:
+      - ./export.sql:/docker-entrypoint-initdb.d/export.sql
 
   pg-2:
     image: bitnami/postgresql-repmgr:latest
@@ -52,8 +52,8 @@ services:
       POSTGRESQL_USERNAME: postgres
       POSTGRESQL_PASSWORD: password
       POSTGRESQL_DATABASE: online_store
-    # volumes:
-    #   - ./export.sql:/docker-entrypoint-initdb.d/export.sql
+    volumes:
+      - ./export.sql:/docker-entrypoint-initdb.d/export.sql
 
   pgpool:
     image: bitnami/pgpool:latest
