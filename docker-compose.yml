@@ -121,8 +121,5 @@ services:
 
 networks:
   pg_network:
-      name: pg_network
-      ipam:
-      config:
-        - subnet: 172.23.0.0/16
-          gateway: 172.23.0.1
+    external: 
+      name: jbuk_pg_network
