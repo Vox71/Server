@@ -137,6 +137,7 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
     networks:
       - pg_network
+    depends_on:
       - pgpool
       - pgpool2
       - nginx
