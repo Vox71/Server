@@ -22,6 +22,7 @@ pipeline {
             }
         }
     }
+    agent local
      post {
            always {
                cleanWs() // Очистка рабочего пространства
