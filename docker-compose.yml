@@ -90,6 +90,34 @@ services:
       - pg-0
       - pg-1
       - pg-2
+    
+  flask_app:
+    build: .
+    deploy:
+      replicas: 3
+    networks:
+      - pg_network
+    depends_on:
+      - pg-0
+      - pg-1
+      - pg-2
+      - pgpool
+      - pgpool2
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - pg_network
+    depends_on:
+      - pg-0
+      - pg-1
+      - pg-2
+      - pgpool
+      - pgpool2
 
 networks:
   pg_network:
