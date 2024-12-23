@@ -6,7 +6,7 @@ pipeline {
             agent { label 'local' } 
             steps {
                 script {
-                    sh 'docker-compose  --no-cache'
+                    sh 'docker-compose build'
                 }
             }
         }
