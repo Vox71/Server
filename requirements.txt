@@ -1,5 +1,5 @@
 flask
 psycopg2-binary
 redis
-prometheus_client
 prometheus_flask_exporter
+flasgger

@@ -2,9 +2,12 @@ import random
 from flask import Flask, request, jsonify
 import psycopg2
 from prometheus_flask_exporter import PrometheusMetrics
+from flasgger import Swagger
+
 app = Flask(__name__)
 app.debug = False
 metrics = PrometheusMetrics(app)
+swagger = Swagger(app)
 # def time_request(func):
 #     @functools.wraps(func)  # Сохраняем метаданные оригинальной функции
 #     def wrapper(*args, **kwargs):
@@ -30,6 +33,13 @@ def main():
 
 @app.route('/products', methods=['GET'])
 def get_products():
+    """
+    Get products
+    ---
+    responses:
+      200:
+        description: Get all products
+    """    
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM Products;')
@@ -42,7 +52,63 @@ def get_products():
 @app.route('/cart/add', methods=['POST'])
 # @time_request
 def add_to_cart():
-    data = request.json
+    """
+    Добавляет товар в корзину.
+    ---
+    tags:
+      - Cart
+    parameters:
+      - name: cart_id
+        in: body
+        type: integer
+        required: true
+        description: ID корзины
+      - name: product_id
+        in: body
+        type: integer
+        required: true
+        description: ID товара
+      - name: quantity
+        in: body
+        type: integer
+        required: true
+        description: Количество товара
+    responses:
+      200:
+        description: Товар успешно добавлен в корзину
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Product added to cart"
+      400:
+        description: Неверный запрос (например, отсутствуют необходимые поля)
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Bad request: Missing required fields"
+      404:
+        description: Корзина не найдена
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Cart not found"
+      500:
+        description: Внутренняя ошибка сервера
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Internal server error"
+    """
+
+    data = request.json 
     cart_id = data['cart_id']
     product_id = data['product_id']
     quantity = data['quantity']
@@ -59,9 +125,40 @@ def add_to_cart():
 
     return jsonify({'message': 'Product added to cart'})
 
-@app.route('/cart/update', methods=['POST'])
+@app.route('/cart/update', methods=['PUT'])
 # @time_request
 def update_cart_item():
+    """
+    Обновляет количество товаров в корзине
+    ---
+    parameters:
+      - name: cart_id
+        in: body
+        type: integer
+        required: true
+        description: ID корзины
+      - name: product_id
+        in: body
+        type: integer
+        required: true
+        description: ID товара для обновления
+      - name: quantity
+        in: body
+        type: integer
+        required: true
+        description: Новое количество товара
+    responses:
+      200:
+        description: Товар в корзине успешно обновлен
+        schema:
+          id: UpdateResponse
+          properties:
+            message:
+              type: string
+              example: Cart item updated successfully
+      404:
+        description: Item not found in cart
+    """
     data = request.json
     cart_id = data['cart_id']
     product_id = data['product_id']
@@ -84,6 +181,49 @@ def update_cart_item():
 @app.route('/cart/remove', methods=['DELETE'])
 # @time_request
 def remove_from_cart():
+    """
+    Удалить продукт из корзины
+    ---
+    tags:
+      - Cart
+    parameters:
+      - name: cart_id
+        in: body
+        type: integer
+        required: true
+        description: ID корзины
+      - name: product_id
+        in: body
+        type: integer
+        required: true
+        description: ID продукта для удаления
+    responses:
+      200:
+        description: Продукт успешно удален из корзины
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: 'Product removed from cart'
+      404:
+        description: Корзина или продукт не найдены
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: 'Cart not found or product not found'
+      500:
+        description: Ошибка сервера
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: 'An error occurred: <error_message>'
+    """
+
     data = request.json
     cart_id = data['cart_id']
     product_id = data['product_id']
@@ -102,6 +242,59 @@ def remove_from_cart():
 @app.route('/checkout', methods=['POST'])
 # @time_request
 def checkout():
+    """
+    Оформить заказ
+    ---
+    parameters:
+      - name: cart_id
+        in: body
+        type: integer
+        required: true
+        description: ID корзины для оформления
+        schema:
+          type: object
+          properties:
+            cart_id:
+              type: integer
+    responses:
+      201:
+        description: Заказ создан
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Order created successfully
+            order_id:
+              type: integer
+              example: 123
+
+      400:
+        description: Корзина пустая
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: Cart is empty
+      404:
+        description: Корзина не найдена
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: Cart not found
+
+      500:
+        description: Ошибка БД
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: Error message
+    """
     data = request.json
     cart_id = data['cart_id']
     conn = get_db_connection()
@@ -134,6 +327,43 @@ def checkout():
 @app.route('/user/add', methods=['POST'])
 # @time_request
 def create_user():
+    """
+    Создать нового пользователя
+    ---
+    tags:
+      - User
+    parameters:
+      - name: user_id
+        in: body
+        type: integer
+        required: true
+        description: Уникальный идентификатор пользователя
+    responses:
+      200:
+        description: Пользователь создан
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "user created"
+      400:
+        description: Неправильные входные данные
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Bad Request: Missing user_id"
+      500:
+        description: Ошибка БД
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Internal Server Error: Could not create user"
+    """
     data = request.json
     i = data['user_id']
     conn = get_db_connection()
@@ -146,6 +376,73 @@ def create_user():
     cursor.close()
     conn.close()
     return jsonify({'message': 'user created'})
+
+@app.route('/cart/get', methods=['GET'])
+def cart_get():
+    """
+    Получить товары из корзины.
+    ---
+    tags:
+      - Cart
+
+    parameters:
+      - name: cart_id
+        in: query
+        type: integer
+        required: true
+        description: ID корзины, для которой нужно получить товары.
+    responses:
+      200:
+        description: Успешно получены товары из корзины.
+        schema:
+          id: CartGetResponse
+          properties:
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  item_id:
+                    type: integer
+                    example: 1
+                  quantity:
+                    type: integer
+                    example: 2
+      400:
+        description: Неверный запрос, отсутствуют необходимые параметры.
+        schema:
+          id: BadRequestResponse
+          properties:
+            message:
+              type: string
+              example: "Invalid input"
+      404:
+        description: Корзина не найдена.
+        schema:
+          id: NotFoundResponse
+          properties:
+            message:
+              type: string
+              example: "Cart not found"
+      500:
+        description: Внутренняя ошибка сервера.
+        schema:
+          id: InternalServerErrorResponse
+          properties:
+            message:
+              type: string
+              example: "Internal server error"
+    """
+    data = request.json
+    i = data['cart_i']
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT FROM Cart_Items WHERE cart_id = %s',
+                   (i))
+    cart_items = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify(cart_items)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
